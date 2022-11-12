@@ -8,7 +8,7 @@
 ---
 
 <div align="center">
-    <img src="https://github.com/FlamesX-128/anigo/tree/main/assets/image.jpg" height="200" />
+    <img src="https://github.com/FlamesX-128/anigo/blob/main/assets/image.jpg" height="200" />
 </div>
 
 ---
