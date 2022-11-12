@@ -44,7 +44,7 @@
 
 Download the binary from [releases](https://github.com/FlamesX-128/anigo/releases).
 
-### Using Go 1.17+
+### Using Go 1.19
 
 ```sh
 go install github.com/FlamesX-128/anigo@latest
