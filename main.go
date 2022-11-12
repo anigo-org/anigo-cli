@@ -115,7 +115,7 @@ func LoadPlugin(path string) (*models.Plugin, error) {
 //
 
 func init() {
-	filepath.Walk("plugins", func(dir string, info os.FileInfo, err error) error {
+	filepath.Walk("anigo-plugins", func(dir string, info os.FileInfo, err error) error {
 		dirPath, _ := os.Getwd()
 
 		if err == nil && strings.HasSuffix(info.Name(), ".so") {

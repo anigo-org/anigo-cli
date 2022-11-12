@@ -52,6 +52,12 @@ go install github.com/FlamesX-128/anigo@latest
 
 _remember to export $GOPATH/bin._
 
+By default it does not include functionalities to watch anime, you must download them in [anigo-plugins](https://github.com/FlamesX-128/anigo-plugins), the use of the consumer plugin is recommended.
+
+## Plugin directory
+
+Anigo will look for the `anigo-plugins` folder in the current directory from where it is called.
+
 ## Usage
 
 https://user-images.githubusercontent.com/78381898/201449877-33e16e33-6c0b-47a6-9174-638ffe7f6a4e.mp4
@@ -64,7 +70,6 @@ Please make sure to update tests as appropriate.
 
 ## Resources
 
-- [Consumet](https://github.com/consumet/api.consumet.org)
 - [Shields.io](https://shields.io/)
 - [Image source](https://www.pixiv.net/en/artworks/85373804)
 
