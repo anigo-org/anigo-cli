@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/FlamesX-128/anigo-plugins/models"
 	commandline "github.com/FlamesX-128/anigo/controllers/command-line"
 	"github.com/FlamesX-128/anigo/controllers/surveys"
-	"github.com/FlamesX-128/anigo/models"
 	"golang.org/x/exp/maps"
 )
 

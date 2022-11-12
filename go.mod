@@ -3,6 +3,7 @@ module github.com/FlamesX-128/anigo
 go 1.19
 
 require (
+	github.com/FlamesX-128/anigo-plugins/models v0.0.0-20221112034426-513ec4950ffe
 	github.com/manifoldco/promptui v0.9.0
 	golang.org/x/exp v0.0.0-20221110155412-d0897a79cd37
 )
