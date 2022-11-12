@@ -1,17 +1,13 @@
 package models
 
-/*
-type Package struct {
-	Search func(string) gogoanime.Search
-	Info   func(string) gogoanime.Info
-	Watch  func(string) gogoanime.Watch
-}*/
-
-type Package interface {
+type Provider interface {
 	Search(string) []Anime
 	Info(string) Info
 	Watch(string) []Source
-	Name() string
+}
+
+type Plugin struct {
+	Providers map[string]Provider
 }
 
 //

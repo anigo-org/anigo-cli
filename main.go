@@ -16,9 +16,9 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-var providers = map[string]models.Package{}
+var providers = map[string]models.Provider{}
 
-func searchOption(p models.Package) {
+func searchOption(p models.Provider) {
 	var (
 		entries = make(map[string]string)
 		answer  string
@@ -88,48 +88,51 @@ var menuOptions = map[string]func(string){
 	},
 }
 
-func LoadPlugin(path string) (models.Package, error) {
-	plugin, err := plugin.Open(path)
+func LoadPlugin(path string) (*models.Plugin, error) {
+	var (
+		data interface{}
+		err  error
+	)
 
-	if err != nil {
-		fmt.Println(err)
-
-		return nil, err
-	}
-
-	symbol, err := plugin.Lookup("Provider")
-
-	if err != nil {
-		fmt.Println(err)
+	if data, err = plugin.Open(path); err != nil {
 
 		return nil, err
 	}
 
-	provider, ok := symbol.(models.Package)
+	if data, err = data.(*plugin.Plugin).Lookup("Plugin"); err != nil {
 
-	if !ok {
-		return nil, fmt.Errorf("invalid package")
+		return nil, err
 	}
 
-	return provider, nil
+	if data, ok := data.(*models.Plugin); ok {
+
+		return data, nil
+	}
+
+	return nil, fmt.Errorf("unknown plugin type")
 }
 
 //
 
 func init() {
-	filepath.Walk("plugins", func(s string, info os.FileInfo, err error) error {
-		dir, _ := os.Getwd()
+	filepath.Walk("plugins", func(dir string, info os.FileInfo, err error) error {
+		dirPath, _ := os.Getwd()
 
 		if err == nil && strings.HasSuffix(info.Name(), ".so") {
-			ss := path.Join(dir, s)
+			filePath := path.Join(dirPath, dir)
 
-			log.Println("Loading", ss)
+			fmt.Printf("Loading plugin %s\n", filePath)
 
-			if provider, err := LoadPlugin(ss); err == nil {
-				providers[provider.Name()] = provider
+			if data, err := LoadPlugin(filePath); err == nil {
+				for name, provider := range data.Providers {
+					providers[name] = provider
+				}
+
 			} else {
-				log.Println("Failed to load", ss)
+				fmt.Printf("Error loading plugin %s: %s\n", filePath, err)
+
 			}
+
 		}
 
 		return nil
