@@ -115,10 +115,19 @@ func LoadPlugin(path string) (*models.Plugin, error) {
 //
 
 func init() {
+	libtype := ".so"
+
+	switch os := os.Getenv("GOOS"); os {
+	case "windows":
+		libtype = ".dll"
+	case "darwin":
+		libtype = ".dylib"
+	}
+
 	filepath.Walk("anigo-plugins", func(dir string, info os.FileInfo, err error) error {
 		dirPath, _ := os.Getwd()
 
-		if err == nil && strings.HasSuffix(info.Name(), ".so") {
+		if err == nil && strings.HasSuffix(info.Name(), libtype) {
 			filePath := path.Join(dirPath, dir)
 
 			fmt.Printf("Loading plugin %s\n", filePath)
