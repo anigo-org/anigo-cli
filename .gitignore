@@ -1,6 +1,7 @@
 .vscode
 
 anigo-plugins/
+dist/
 
 anigo
 main
