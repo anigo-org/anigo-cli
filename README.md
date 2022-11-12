@@ -52,7 +52,7 @@ go install github.com/FlamesX-128/anigo@latest
 
 _remember to export $GOPATH/bin._
 
-By default it does not include functionalities to watch anime, you must download them in [anigo-plugins](https://github.com/FlamesX-128/anigo-plugins), the use of the consumer plugin is recommended.
+By default it does not include functionalities to watch anime, you must download them in [anigo-plugins](https://github.com/FlamesX-128/anigo-plugins), the use of consumet plugin is recommended.
 
 ## Plugin directory
 
