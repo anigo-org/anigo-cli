@@ -1,48 +1,51 @@
 package plugins
 
 import (
-	"fmt"
-	"io/fs"
 	"path/filepath"
 
+	"github.com/FlamesX-128/anigo/controllers/filesystem"
+	"github.com/FlamesX-128/anigo/controllers/interfaces/ask"
+	"github.com/FlamesX-128/anigo/models/plugins"
 	"github.com/fatih/color"
+	"golang.org/x/exp/maps"
 )
 
-var GOOS = map[string]string{
-	"windows": "dll",
-	"darwin":  "dylib",
-	"linux":   "so",
-}
+func Init[T interface{}](root string, symName string) (data []*T) {
+	var path string = filepath.Join(root, AnigoFolderName, PluginsFolderName)
+	var err error
 
-func Init[T interface{}](root string, folder string, symName string) (data []*T) {
-	pluginFolder := filepath.Join(root, folder)
-	//goos := GOOS[runtime.GOOS]
+	// Check if the plugins folder exists.
+	if ok, _ := filesystem.CheckIfPathExists(path); !ok {
+		var data map[string]plugins.Response
+		var answer bool
 
-	fmt.Println(pluginFolder)
+		if _, err = filesystem.CreateFolderIfNotExists(path); err != nil {
+			color.Red("[Plugin] [Init] [Error] %s", err.Error())
 
-	filepath.Walk(pluginFolder, func(dir string, info fs.FileInfo, err error) error {
-		//filePath := filepath.Join(dir, info.Name())
-
-		if err != nil || info.IsDir() {
-
-			return err
+			return nil
 		}
 
-		var value *T
+		// Ask user if he wants to install plugins.
+		if answer, err = ask.InstallSomePlugin(); err != nil {
+			color.Red("[Plugin] [Selection] [Error] %s", err.Error())
 
-		color.Cyan("[Plugin] [Loading]: %s", info.Name())
-
-		if value, err = Load[T](dir, symName); err != nil {
-			color.Red("[Plugin] [Error] [%s]: %s", info.Name(), err.Error())
-
-			return err
+			return nil
 		}
 
-		color.Green("[Plugin] [Loaded]: %s\n\n", info.Name())
-		data = append(data, value)
+		// Install plugins if user wants to.
+		if answer {
+			// Get plugins from github.
+			if data, err = Request(); err != nil {
+				color.Red("[Plugin] [Request] [Error] %s", err.Error())
 
-		return err
-	})
+				return nil
+			}
 
-	return
+			MultiInstall(path, maps.Values(data))
+		}
+
+	}
+
+	// Load plugins.
+	return Load[T](path, symName)
 }

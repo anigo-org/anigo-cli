@@ -1,26 +1,34 @@
 package plugins
 
 import (
-	"errors"
-	"plugin"
+	"io/fs"
+	"path/filepath"
+
+	"github.com/fatih/color"
 )
 
-func Load[T interface{}](path string, symName string) (*T, error) {
-	plugin, err := plugin.Open(path)
+func Load[T interface{}](folder string, symName string) (data []*T) {
+	filepath.Walk(folder, func(dir string, info fs.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
 
-	if err != nil {
-		return nil, err
-	}
+			return err
+		}
 
-	symbol, err := plugin.Lookup(symName)
+		var value *T
 
-	if err != nil {
-		return nil, err
-	}
+		color.Cyan("[Plugin] [Loading]: %s", info.Name())
 
-	if data, ok := symbol.(*T); ok {
-		return data, nil
-	}
+		if value, err = Open[T](dir, symName); err != nil {
+			color.Red("[Plugin] [Error] [%s]: %s", info.Name(), err.Error())
 
-	return nil, errors.New("plugin symbol does not have the correct type")
+			return err
+		}
+
+		color.Green("[Plugin] [Loaded]: %s\n\n", info.Name())
+		data = append(data, value)
+
+		return err
+	})
+
+	return
 }
