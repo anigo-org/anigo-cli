@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
-	"plugin"
+	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/FlamesX-128/anigo-plugins/models"
 	commandline "github.com/FlamesX-128/anigo/controllers/command-line"
+	"github.com/FlamesX-128/anigo/controllers/plugins"
 	"github.com/FlamesX-128/anigo/controllers/surveys"
+	"github.com/fatih/color"
 	"golang.org/x/exp/maps"
 )
 
@@ -88,64 +89,63 @@ var menuOptions = map[string]func(string){
 	},
 }
 
-func LoadPlugin(path string) (*models.Plugin, error) {
-	var (
-		data interface{}
-		err  error
-	)
-
-	if data, err = plugin.Open(path); err != nil {
-
-		return nil, err
-	}
-
-	if data, err = data.(*plugin.Plugin).Lookup("Plugin"); err != nil {
-
-		return nil, err
-	}
-
-	if data, ok := data.(*models.Plugin); ok {
-
-		return data, nil
-	}
-
-	return nil, fmt.Errorf("unknown plugin type")
-}
-
-//
-
 func init() {
-	libtype := ".so"
+	root, err := os.Getwd()
 
-	switch os := os.Getenv("GOOS"); os {
-	case "windows":
-		libtype = ".dll"
-	case "darwin":
-		libtype = ".dylib"
+	if err != nil {
+		log.Panicln(err)
 	}
 
-	filepath.Walk("anigo-plugins", func(dir string, info os.FileInfo, err error) error {
-		dirPath, _ := os.Getwd()
+	anigoFolder := filepath.Join(root, "anigo")
 
-		if err == nil && strings.HasSuffix(info.Name(), libtype) {
-			filePath := path.Join(dirPath, dir)
+	anigoPluginFolder := filepath.Join(anigoFolder, "plugins")
+	//anigoConfig := filepath.Join(anigoFolder, "config.json")
 
-			fmt.Printf("Loading plugin %s\n", filePath)
+	if _, err := os.Stat(anigoFolder); os.IsNotExist(err) {
+		/*if err := os.WriteFile(anigoConfig, []byte{}, 0644); err != nil {
+			log.Panicln(err)
+		}*/
 
-			if data, err := LoadPlugin(filePath); err == nil {
-				for name, provider := range data.Providers {
-					providers[name] = provider
-				}
-
-			} else {
-				fmt.Printf("Error loading plugin %s: %s\n", filePath, err)
-
-			}
-
+		if err := os.MkdirAll(anigoPluginFolder, 0755); err != nil {
+			log.Panicln(err)
 		}
 
-		return nil
-	})
+		data, err := plugins.Search()
+
+		if err != nil {
+			color.Red("[Plugin] [Search] [Error] %s", err)
+
+			return
+		}
+
+		toInstall, err := commandline.AskPlugin(maps.Keys(data))
+
+		if err != nil {
+			color.Red("[Plugin] [Selection] [Error] %s", err)
+
+			return
+		}
+
+		for _, plugin := range toInstall {
+			for _, asset := range data[plugin].Assets {
+				fmt.Println(asset.Name, (runtime.GOOS + "-" + runtime.GOARCH))
+				if !strings.Contains(asset.Name, (runtime.GOOS + "-" + runtime.GOARCH)) {
+
+					continue
+				}
+
+				plugins.Install(filepath.Join(anigoPluginFolder, plugin), asset.Url)
+			}
+		}
+
+	}
+
+	for _, plugin := range plugins.Init[models.Plugin](anigoFolder, "plugins", "Plugin") {
+		for key, value := range plugin.Providers {
+			providers[key] = value
+		}
+
+	}
 }
 
 func main() {

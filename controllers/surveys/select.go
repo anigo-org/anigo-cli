@@ -1,16 +1,14 @@
 package surveys
 
 import (
-	"github.com/manifoldco/promptui"
+	"github.com/AlecAivazis/survey/v2"
 )
 
-func Select(label string, items []string) (string, error) {
-	prompt := promptui.Select{
-		Items: items,
-		Label: label,
-	}
+func Select(message string, options []string) (string, error) {
+	err := survey.AskOne(&survey.Select{
+		Message: message,
+		Options: options,
+	}, &message)
 
-	_, resp, err := prompt.Run()
-
-	return resp, err
+	return message, err
 }

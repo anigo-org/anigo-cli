@@ -32,8 +32,8 @@ func AskEpisode(max int) (string, error) {
 
 	return surveys.String(
 		fmt.Sprintf("Select an episode (1-%d)", max),
-		func(s string) error {
-			if i, err := strconv.Atoi(s); err != nil || i < 1 || i > max {
+		func(s interface{}) error {
+			if i, err := strconv.Atoi(s.(string)); err != nil || i < 1 || i > max {
 				return fmt.Errorf("invalid episode number")
 			}
 
@@ -51,4 +51,13 @@ func AskQuality(ss []string) (string, error) {
 	}
 
 	return surveys.Select("Select a quality", ss)
+}
+
+func AskPlugin(ss []string) ([]string, error) {
+	switch len(ss) {
+	case 0:
+		return nil, fmt.Errorf("no plugins found")
+	}
+
+	return surveys.Multi("Select a plugin", ss)
 }
