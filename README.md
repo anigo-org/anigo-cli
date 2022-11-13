@@ -60,7 +60,7 @@ By default it does not include functionalities to watch anime, you must download
 
 ## Plugin directory
 
-Anigo will look for the `anigo-plugins` folder in the current directory from where it is called.
+Anigo will look for the `anigo/plugins` folder in the current directory from where it is called.
 
 ## Usage
 
