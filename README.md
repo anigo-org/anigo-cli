@@ -54,6 +54,10 @@ _remember to export $GOPATH/bin._
 
 By default it does not include functionalities to watch anime, you must download them in [anigo-plugins](https://github.com/FlamesX-128/anigo-plugins), the use of consumet plugin is recommended.
 
+## Dependencies
+
+- [mpv](https://github.com/mpv-player/mpv)
+
 ## Plugin directory
 
 Anigo will look for the `anigo-plugins` folder in the current directory from where it is called.
