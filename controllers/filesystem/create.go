@@ -3,7 +3,7 @@ package filesystem
 import "os"
 
 func CreateFolderIfNotExists(path string) (bool, error) {
-	if ok, err := CheckIfPathExists(path); err != nil || ok {
+	if ok, err := CheckIfPathExists(path); ok {
 
 		return ok, err
 	}
@@ -19,7 +19,7 @@ func CreateFolderIfNotExists(path string) (bool, error) {
 //
 
 func CreateFileIfNotExists(path string) (bool, error) {
-	if ok, err := CheckIfPathExists(path); err != nil || ok {
+	if ok, err := CheckIfPathExists(path); ok {
 
 		return ok, err
 	}
