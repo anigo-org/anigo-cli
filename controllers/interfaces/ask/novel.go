@@ -22,9 +22,9 @@ func NovelToSelect(options []string) (string, error) {
 func EpisodeToSelect(size int) (string, error) {
 	switch size {
 	case 0:
-		return "1", errors.New("no episodes found")
+		return "0", errors.New("no episodes found")
 	case 1:
-		return "2", nil
+		return "1", nil
 	}
 
 	message := fmt.Sprintf("which episode do you want to select? (1-%d)", size)
