@@ -3,10 +3,12 @@ package plugins
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/FlamesX-128/anigo/models/plugins"
+	"github.com/hashicorp/go-version"
 )
 
 func FilterValidPlugins(ss []plugins.Response) map[string]plugins.Response {
@@ -14,16 +16,37 @@ func FilterValidPlugins(ss []plugins.Response) map[string]plugins.Response {
 
 	for _, plugin := range ss {
 		params := strings.Split(plugin.Name, "-")
-		name := params[0]
+		info := strings.Split(params[0], "@")
+		skip := false
 
 		if len(params) != 4 || params[1] != PluginModelVersion {
 
 			continue
 		}
 
-		if _, ok := data[name]; !ok {
-			data[name] = plugin
+		for name := range data {
+			if !strings.HasPrefix(name, info[0]) {
 
+				continue
+			}
+
+			v1, err := version.NewVersion(strings.Split(name, "@")[1])
+			v2, err2 := version.NewVersion(info[1])
+
+			if err != nil || err2 != nil {
+				log.Panicln(err, err2)
+			}
+
+			if v1.GreaterThan(v2) {
+				skip = true
+			} else {
+				delete(data, name)
+			}
+
+		}
+
+		if !skip {
+			data[params[0]] = plugin
 		}
 
 	}
