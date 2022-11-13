@@ -1,14 +1,11 @@
 package surveys
 
-import (
-	"github.com/manifoldco/promptui"
-)
+import "github.com/AlecAivazis/survey/v2"
 
-func String(label string, validate func(string) error) (string, error) {
-	prompt := promptui.Prompt{
-		Validate: validate,
-		Label:    label,
-	}
+func String(message string, validate func(interface{}) error) (string, error) {
+	err := survey.AskOne(&survey.Input{
+		Message: message,
+	}, &message, survey.WithValidator(validate))
 
-	return prompt.Run()
+	return message, err
 }

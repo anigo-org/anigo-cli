@@ -1,167 +1,58 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"path"
-	"path/filepath"
-	"plugin"
-	"strconv"
-	"strings"
 
 	"github.com/FlamesX-128/anigo-plugins/models"
-	commandline "github.com/FlamesX-128/anigo/controllers/command-line"
+	"github.com/FlamesX-128/anigo/controllers/interfaces"
+	"github.com/FlamesX-128/anigo/controllers/plugins"
 	"github.com/FlamesX-128/anigo/controllers/surveys"
+	"github.com/fatih/color"
 	"golang.org/x/exp/maps"
 )
 
 var providers = map[string]models.Provider{}
 
-func searchOption(p models.Provider) {
-	var (
-		entries = make(map[string]string)
-		answer  string
-		err     error
-	)
-
-	// Ask for novel to search.
-	if answer, err = commandline.AskSearch(); err != nil {
-		fmt.Println(err)
-
-		return
-	}
-
-	// Search the novel.
-	for _, novel := range p.Search(answer) {
-		entries[novel.Title] = novel.Id
-	}
-
-	// Select the novel.
-	if answer, err = commandline.AskNovel(maps.Keys(entries)); err != nil {
-		fmt.Println(err)
-
-		return
-	}
-
-	// Get novel info.
-	info := p.Info(entries[answer])
-
-	// Select episode.
-	if answer, err = commandline.AskEpisode(len(info.Episodes)); err != nil {
-		fmt.Println(err)
-
-		return
-	}
-
-	epi, _ := strconv.Atoi(answer)
-
-	// Get episode url, including quality.
-	sources := p.Watch(info.Episodes[epi-1].Id)
-	maps.Clear(entries)
-
-	for _, source := range sources {
-		entries[source.Quality] = source.Url
-	}
-
-	// Select quality.
-	if answer, err = commandline.AskQuality(maps.Keys(entries)); err != nil {
-		fmt.Println(err)
-
-		return
-	}
-
-	// Play the episode.
-	if err = commandline.Play(entries[answer]); err != nil {
-		fmt.Println(err)
-
-		return
-	}
-}
-
-var menuOptions = map[string]func(string){
-	"search": func(svc string) {
-		searchOption(providers[svc])
-	},
-	"exit": func(_ string) {
-		os.Exit(0)
-	},
-}
-
-func LoadPlugin(path string) (*models.Plugin, error) {
-	var (
-		data interface{}
-		err  error
-	)
-
-	if data, err = plugin.Open(path); err != nil {
-
-		return nil, err
-	}
-
-	if data, err = data.(*plugin.Plugin).Lookup("Plugin"); err != nil {
-
-		return nil, err
-	}
-
-	if data, ok := data.(*models.Plugin); ok {
-
-		return data, nil
-	}
-
-	return nil, fmt.Errorf("unknown plugin type")
-}
-
-//
-
 func init() {
-	libtype := ".so"
+	var root string
+	var err error
 
-	switch os := os.Getenv("GOOS"); os {
-	case "windows":
-		libtype = ".dll"
-	case "darwin":
-		libtype = ".dylib"
+	if root, err = os.Getwd(); err != nil {
+		log.Panicln(color.RedString("[Plugin] [Init] [Error] %s", err.Error()))
+
+		return
 	}
 
-	filepath.Walk("anigo-plugins", func(dir string, info os.FileInfo, err error) error {
-		dirPath, _ := os.Getwd()
-
-		if err == nil && strings.HasSuffix(info.Name(), libtype) {
-			filePath := path.Join(dirPath, dir)
-
-			fmt.Printf("Loading plugin %s\n", filePath)
-
-			if data, err := LoadPlugin(filePath); err == nil {
-				for name, provider := range data.Providers {
-					providers[name] = provider
-				}
-
-			} else {
-				fmt.Printf("Error loading plugin %s: %s\n", filePath, err)
-
-			}
-
+	// Load plugins.
+	for _, plugin := range plugins.Init[models.Plugin](root, "Plugin") {
+		// Register provider.
+		for name, provider := range plugin.Providers {
+			providers[name] = provider
 		}
 
-		return nil
-	})
+	}
+
 }
 
 func main() {
 	for {
+		answer, err := surveys.Select("Select an option", maps.Keys(interfaces.MenuOptions))
+
+		if err != nil {
+			log.Panicln(err)
+		}
+
+		if answer == "Exit" {
+			interfaces.MenuOptions["exit"](nil, nil)
+		}
+
 		ans, err := surveys.Select("Select a provider", maps.Keys(providers))
 
 		if err != nil {
 			log.Panicln(err)
 		}
 
-		answer, err := surveys.Select("Select an option", maps.Keys(menuOptions))
-
-		if err != nil {
-			log.Panicln(err)
-		}
-
-		menuOptions[answer](ans)
+		interfaces.MenuOptions[answer](providers[ans], nil)
 	}
 }
