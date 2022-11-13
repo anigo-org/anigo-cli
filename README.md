@@ -60,7 +60,7 @@ Anigo will look for the `anigo-plugins` folder in the current directory from whe
 
 ## Usage
 
-https://user-images.githubusercontent.com/78381898/201449877-33e16e33-6c0b-47a6-9174-638ffe7f6a4e.mp4
+https://user-images.githubusercontent.com/78381898/201512196-7f4131f3-1c1c-45ff-84e6-a9edb691beca.mp4
 
 ## Contributing
 
